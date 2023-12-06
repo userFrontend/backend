@@ -68,12 +68,40 @@ const messageCtrl = {
     updateMessage: async (req, res) => {
         const {messageId} = req.params
         try {
-            const findChat = await Message.findById(messageId)
-            if(findChat){
-                const chat = await Message.findByIdAndUpdate(messageId, req.body, {new: true});
-                return res.status(200).json({message: "User update successfully", chat})
+            const updateMessage = await Message.findById(messageId)
+            if(updateMessage.senderId === req.user._id || req.userIsAdmin){
+                if(updateMessage){
+                    if(req.files){
+                        const {file} = req.files;
+                        if(file){
+                            const bgformat = file.mimetype.split('/')[1];
+                            if(bgformat !== 'png' && bgformat !== 'jpeg') {
+                                return res.status(403).json({message: 'file format incorrect'})
+                            }
+
+                            const messageImg = `${v4()}.${bgformat}`
+                            file.mv(path.join(uploadsDir, messageImg), (err) => {
+                                if(err){
+                                    return res.status(503).json({message: err.message})
+                                }
+                            })
+                            req.body.file = messageImg;
+
+                            if(updateMessage.file){
+                                fs.unlinkSync(path.join(uploadsDir, updateMessage.file), (err) => {
+                                    if(err){
+                                        return res.status(503).json({message: err.message})
+                                    }
+                                })
+                            }
+                        }
+                    }
+                    const isMessage = await Message.findByIdAndUpdate(messageId, req.body, {new: true});
+                    return res.status(200).json({message: "User update successfully", isMessage})
+                }
+                return res.status(404).json({message: "Message not found"})
             }
-            res.status(404).json({message: 'Message not foud'})
+            res.status(405).json({message: 'Acces Denied!. You can delete only your own accout'})
         } catch (error) {
             res.status(503).json({message: error.message})
         }

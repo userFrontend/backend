@@ -86,7 +86,7 @@ const userCtl = {
                             }
 
                             const coverImg = `${v4()}.${bgformat}`
-                            image.mv(path.join(uploadsDir, coverImg), (err) => {
+                            coverImage.mv(path.join(uploadsDir, coverImg), (err) => {
                                 if(err){
                                     return res.status(503).json({message: err.message})
                                 }
