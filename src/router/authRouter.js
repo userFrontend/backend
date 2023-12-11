@@ -5,6 +5,5 @@ const authCtrl = require('../contoller/authCtrl');
 
 router.post('/signup', authCtrl.signup);
 router.post('/login', authCtrl.login);
-router.delete('/delete/:userId', authCtrl.del);
 
 module.exports = router

@@ -16,6 +16,7 @@ const messageCtrl = {
 
             if(req.files){
                 const {image} = req.files;
+                console.log(image);
                 const format = image.mmeitype.split('/')[1];
                 if(format !== 'png' && format !== 'jpeg') {
                     return res.status(403).json({message: 'file format incorrect'})
@@ -29,9 +30,9 @@ const messageCtrl = {
                 })
                 req.body.file = nameImg;
             }
-            const message = new Message(req.body)
-            await message.save()
-            res.status(201).json({message: 'new message', message})
+            const messages = new Message(req.body)
+            await messages.save()
+            res.status(201).json({message: 'new message', messages})
         } catch (error) {
             res.status(503).json({message: error.message})
         }
