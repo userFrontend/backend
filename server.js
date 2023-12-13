@@ -1,7 +1,9 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const cors = require('cors')
+const http = require('http')
 const dotenv = require('dotenv')
+const socketIo = require('socket.io')
 const mongoose = require('mongoose');
 
 const path = require('path')
@@ -17,6 +19,14 @@ const messageRouter = require('./src/router/messageRouter');
 const app = express();
 const PORT = process.env.PORT || 4001;
 
+const server = http.createServer(app)
+const io = socketIo(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        // methods: ["GET", "POST"]
+    }
+})
+
 //to save filess for public
 app.use(express.static(path.join(__dirname, 'src', 'public')))
 //middlewares
@@ -26,15 +36,32 @@ app.use(fileUpload());
 app.use(cors());
 
 // routes use
-app.use('/api/auth', authRouter)
-app.use('/api/user', userRouter)
-app.use('/api/chat', chatRouter)
-app.use('/api/message', messageRouter)
+app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/message', messageRouter);
 
+// websocket functions
+let activeUsers = [];
+
+io.on('connection', (socket) => {
+    socket.on('new-user-add', (newUserId) => {
+        if(!activeUsers.some(user => user.userId === newUserId)){
+            activeUsers.push({userId: newUserId, socketId: socket.id})
+        }
+
+        io.emit('get-users', activeUsers)
+    })
+
+    socket.on('disconnect', () => {
+        activeUsers = activeUsers.filter(user => user.socketId !== socket.id)
+        io.emit('get-users', activeUsers)
+    })
+})
 const MONGO_URL = process.env.MONGO_URL;
 
 mongoose.connect(MONGO_URL, {})
 .then(() => {
-    app.listen(PORT, () => console.log(`Server stared on port: ${PORT}`))
+    server.listen(PORT, () => console.log(`Server stared on port: ${PORT}`));
 })
-.catch(error => console.log(error))
+.catch(error => console.log(error));
