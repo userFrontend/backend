@@ -57,6 +57,11 @@ io.on('connection', (socket) => {
         activeUsers = activeUsers.filter(user => user.socketId !== socket.id)
         io.emit('get-users', activeUsers)
     })
+
+    socket.on('exit', (id) => {
+        activeUsers = activeUsers.filter(user => user.userId !== id)
+       io.emit('get-users', activeUsers)
+    })
 })
 const MONGO_URL = process.env.MONGO_URL;
 
