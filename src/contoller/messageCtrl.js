@@ -20,7 +20,6 @@ const messageCtrl = {
                 if(format !== 'png' && format !== 'jpeg') {
                     return res.status(403).json({message: 'file format incorrect'})
                 }
-
                 const nameImg = `${v4()}.${format}`
                 image.mv(path.join(uploadsDir, nameImg), (err) => {
                     if(err){
