@@ -64,6 +64,7 @@ io.on("connection", (socket) => {
   
       io.emit("get-users", activeUsers);
     });
+    
   
     socket.on("send-message", (data) => {
         console.log(data);
