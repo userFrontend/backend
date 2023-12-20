@@ -16,8 +16,7 @@ const messageCtrl = {
 
             if(req.files){
                 const {image} = req.files;
-                console.log(image);
-                const format = image.mmeitype.split('/')[1];
+                const format = image.mimetype.split('/')[1];
                 if(format !== 'png' && format !== 'jpeg') {
                     return res.status(403).json({message: 'file format incorrect'})
                 }
