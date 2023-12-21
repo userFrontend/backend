@@ -1,6 +1,11 @@
 const Chat = require("../model/chatModel")
 const Message = require("../model/messageModel")
 
+const path = require('path');
+const fs = require('fs');
+
+const uploadsDir = path.join(__dirname, "../", "public");
+
 const chatCtrl = {
     userChats: async (req, res) => {
         const {_id} = req.user
@@ -30,6 +35,15 @@ const chatCtrl = {
         try {
             const chat = await Chat.findById(chatId);
             if(chat){
+                (await Message.find({chatId: chat._id})).forEach(message => {
+                    if(message.file){
+                        fs.unlinkSync(path.join(uploadsDir, Message.file), (err) => {
+                            if(err){
+                                return res.status(503).json({message: err.message})
+                            }
+                        })
+                    }
+                })
                 await Message.deleteMany({chatId: chat._id})
                 await Chat.findByIdAndDelete(chat._id)
                 return res.status(200).json({message: 'chat deleted successfully'})
