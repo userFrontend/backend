@@ -20,6 +20,9 @@ const messageCtrl = {
                 if(format !== 'png' && format !== 'jpeg') {
                     return res.status(403).json({message: 'file format incorrect'})
                 }
+                if(image.size > 1000000) {
+                    return res.status(403).json({message: 'Image size must be less than (1) MB'})
+                }
                 const nameImg = `${v4()}.${format}`
                 image.mv(path.join(uploadsDir, nameImg), (err) => {
                     if(err){
@@ -71,15 +74,18 @@ const messageCtrl = {
             if(updateMessage.senderId === req.user._id || req.userIsAdmin){
                 if(updateMessage){
                     if(req.files){
-                        const {file} = req.files;
-                        if(file){
-                            const bgformat = file.mimetype.split('/')[1];
+                        const {image} = req.files;
+                        if(image){
+                            const bgformat = image.mimetype.split('/')[1];
                             if(bgformat !== 'png' && bgformat !== 'jpeg') {
                                 return res.status(403).json({message: 'file format incorrect'})
                             }
+                            if(image.size > 1000000) {
+                                return res.status(403).json({message: 'Image size must be less than (1) MB'})
+                            }
 
                             const messageImg = `${v4()}.${bgformat}`
-                            file.mv(path.join(uploadsDir, messageImg), (err) => {
+                            image.mv(path.join(uploadsDir, messageImg), (err) => {
                                 if(err){
                                     return res.status(503).json({message: err.message})
                                 }

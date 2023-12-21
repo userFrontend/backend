@@ -54,9 +54,7 @@ const userCtl = {
                             }
                         })
                     }
-                    res.status(200).json({message: "User deleted successfully", user: deleteUser})
-                } else {
-                    return res.status(404).json({message: "User not found"})
+                    return res.status(200).json({message: "User deleted successfully", user: deleteUser})
                 }
             }
             res.status(405).json({message: 'Acces Denied!. You can delete only your own accout'})
@@ -84,6 +82,9 @@ const userCtl = {
                             if(bgformat !== 'png' && bgformat !== 'jpeg') {
                                 return res.status(403).json({message: 'file format incorrect'})
                             }
+                            if(coverImage.size > 1000000) {
+                                return res.status(403).json({message: 'Image size must be less than (1) MB'})
+                            }
 
                             const coverImg = `${v4()}.${bgformat}`
                             coverImage.mv(path.join(uploadsDir, coverImg), (err) => {
@@ -105,6 +106,10 @@ const userCtl = {
                             const format = image.mimetype.split('/')[1];
                             if(format !== 'png' && format !== 'jpeg') {
                                 return res.status(403).json({message: 'file format incorrect'})
+                            }
+
+                            if(image.size > 1000000) {
+                                return res.status(403).json({message: 'Image size must be less than (1) MB'})
                             }
 
                             const nameImg = `${v4()}.${format}`
