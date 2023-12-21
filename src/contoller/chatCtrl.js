@@ -28,9 +28,10 @@ const chatCtrl = {
     deleteChat: async (req, res) => {
         const {chatId} = req.params
         try {
-            const chat = await Chat.findByIdAndDelete(chatId);
+            const chat = await Chat.findById(chatId);
             if(chat){
                 await Message.deleteMany({chatId: chat._id})
+                await Chat.findByIdAndDelete(chat._id)
                 return res.status(200).json({message: 'chat deleted successfully'})
             }
             res.status(404).json({message: 'Chat not foud'})
