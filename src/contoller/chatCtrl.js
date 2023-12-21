@@ -30,7 +30,7 @@ const chatCtrl = {
         try {
             const chat = await Chat.findByIdAndDelete(chatId);
             if(chat){
-                Message.deleteMany({chatId: chatId})
+                Message.deleteMany({chatId: chat._id})
                 return res.status(200).json({message: 'chat deleted successfully'})
             }
             res.status(404).json({message: 'Chat not foud'})
