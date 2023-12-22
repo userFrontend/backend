@@ -30,6 +30,7 @@ const authCtrl = {
             res.status(503).json({message: error.message})
         }
     },
+    
     login: async (req, res) => {
         const {email} = req.body
         try {
