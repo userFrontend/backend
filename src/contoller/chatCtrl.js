@@ -37,7 +37,7 @@ const chatCtrl = {
             if(chat){
                 (await Message.find({chatId: chat._id})).forEach(message => {
                     if(message.file){
-                        fs.unlinkSync(path.join(uploadsDir, Message.file), (err) => {
+                        fs.unlinkSync(path.join(uploadsDir, message.file), (err) => {
                             if(err){
                                 return res.status(503).json({message: err.message})
                             }
