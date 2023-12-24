@@ -12,10 +12,9 @@ const userCtl = {
     getUser: async (req, res) => {
         const {id} = req.params
         try {
-            const findUser = await User.findById(id)
+            const findUser = await User.findById(id).select('email firstname lastname role profilePicture coverPicture about livesIn coutry works relationshit')
             if(findUser){
-                const{password, ...otherDetailes} = findUser._doc
-                return res.status(200).json({message: "Find user", user: otherDetailes})
+                return res.status(200).json({message: "Find user", user: findUser})
             }
             res.status(404).json({message: "User not found"})
         } catch (error) {
@@ -24,11 +23,7 @@ const userCtl = {
     },
     getAllUsers: async (req, res) => {
         try {
-            let users = await User.find()
-            users = users.map(user => {
-                const {password, ...otherDetailes} = user._doc
-                return otherDetailes
-            })
+            let users = await User.find().select('email firstname lastname role profilePicture coverPicture about livesIn coutry works relationshit')
             res.status(200).json({message: "All users", users})
         } catch (error) {
             res.status(503).json({message: error.message})
