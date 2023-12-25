@@ -23,7 +23,7 @@ const authCtrl = {
             const user = new User(req.body);
             await user.save();
             const {password, ...otherDetails} = user._doc
-            const token = JWT.sign(otherDetails, JWT_SECRET_KEY);
+            const token = JWT.sign(otherDetails, JWT_SECRET_KEY, {expiresIn: '3s'});
 
             res.status(201).json({message: 'Signup successfully', user: otherDetails, token})
         } catch (error) {
@@ -43,7 +43,7 @@ const authCtrl = {
                 return res.status(400).json({message: 'Login or Password is inCorrect'})
             }
             const {password, ...otherDetails} = findUser._doc
-            const token = JWT.sign(otherDetails, JWT_SECRET_KEY)
+            const token = JWT.sign(otherDetails, JWT_SECRET_KEY, {expiresIn: '3s'})
 
             res.status(200).json({message: 'Login successfully', user: otherDetails, token})
         } catch (error) {
