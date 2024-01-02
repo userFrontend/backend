@@ -30,6 +30,7 @@ const io = socketIo(server, {
 
 //to save filess for public
 app.use(express.static(path.join(__dirname, 'src', 'public')))
+
 //middlewares
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
