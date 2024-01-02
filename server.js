@@ -75,6 +75,14 @@ io.on("connection", (socket) => {
             io.to(user.socketId).emit("answer-message", data);
       }
     });
+
+    socket.on("is-reading", (id) => {
+      io.emit('is-checked', id)
+    })
+
+    socket.on('delete-message', () => {
+      io.emit('deleted')
+    })
   });
 
 const MONGO_URL = process.env.MONGO_URL;

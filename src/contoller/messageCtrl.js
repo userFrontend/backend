@@ -71,7 +71,6 @@ const messageCtrl = {
         const {messageId} = req.params
         try {
             const updateMessage = await Message.findById(messageId)
-            if(updateMessage.senderId === req.user._id || req.userIsAdmin){
                 if(updateMessage){
                     if(req.files){
                         const {image} = req.files;
@@ -102,11 +101,9 @@ const messageCtrl = {
                         }
                     }
                     const isMessage = await Message.findByIdAndUpdate(messageId, req.body, {new: true});
-                    return res.status(200).json({message: "User update successfully", isMessage})
+                    return res.status(200).json({message: "Message update successfully", isMessage})
                 }
-                return res.status(404).json({message: "Message not found"})
-            }
-            res.status(405).json({message: 'Acces Denied!. You can delete only your own accout'})
+                res.status(404).json({message: "Message not found"})
         } catch (error) {
             res.status(503).json({message: error.message})
         }
