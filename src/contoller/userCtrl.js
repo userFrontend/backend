@@ -1,9 +1,6 @@
 const bcrypt = require('bcrypt')
 const cloudinary = require('cloudinary')
 const User = require("../model/userModel")
-const {v4} = require('uuid');
-
-const path = require('path');
 const fs = require('fs');
 
 //cloudinary 
@@ -20,8 +17,6 @@ const removeTemp = (path) => {
     }
   })
 }
-
-const uploadsDir = path.join(__dirname, "../", "public");
 
 const userCtl = {
     getUser: async (req, res) => {
