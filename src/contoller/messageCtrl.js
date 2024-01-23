@@ -1,10 +1,23 @@
 const Message = require("../model/messageModel")
+const cloudinary = require('cloudinary')
 const {v4} = require('uuid');
 
 const path = require('path');
 const fs = require('fs');
 
 const uploadsDir = path.join(__dirname, "../", "public");
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
+  })
+const removeTemp = (path) => {
+    fs.unlink(path, err => {
+      if(err){
+        throw err
+      }
+    })
+  }
 
 const messageCtrl = {
     addMessage: async (req, res) => {
@@ -23,13 +36,17 @@ const messageCtrl = {
                 if(image.size > 1000000) {
                     return res.status(403).json({message: 'Image size must be less than (1) MB'})
                 }
-                const nameImg = `${v4()}.${format}`
-                image.mv(path.join(uploadsDir, nameImg), (err) => {
+                const messageImage = await cloudinary.v2.uploader.upload(image.tempFilePath, {
+                    folder: 'Mern-chat'
+                }, async (err, result) => {
                     if(err){
-                        return res.status(503).json({message: err.message})
+                        throw err
+                    } else {
+                        removeTemp(image.tempFilePath)
+                        return result
                     }
                 })
-                req.body.file = nameImg;
+                req.body.file = messageImage;
             }
             const messages = new Message(req.body)
             await messages.save()
@@ -51,15 +68,16 @@ const messageCtrl = {
     deleteMessage: async (req, res) => {
         const {messageId} = req.params
         try {
-            const deletedMessage = await Message.findByIdAndDelete(messageId);
+            const deletedMessage = await Message.findById(messageId);
             if(deletedMessage){
                 if(deletedMessage.file !== null){
-                    fs.unlinkSync(path.join(uploadsDir, deletedMessage.file), (err) => {
+                    await cloudinary.v2.uploader.destroy(deletedMessage.file.public_id, async (err) =>{
                         if(err){
-                            return res.status(503).json({message: err.message})
+                            throw err
                         }
                     })
                 }
+                await Message.findOneAndDelete(messageId)
                 return res.status(200).json({message: 'Message deleted!', deletedMessage})
             }
             res.status(404).json({message: 'Message not found!'})
@@ -83,21 +101,23 @@ const messageCtrl = {
                                 return res.status(403).json({message: 'Image size must be less than (1) MB'})
                             }
 
-                            const messageImg = `${v4()}.${bgformat}`
-                            image.mv(path.join(uploadsDir, messageImg), (err) => {
+                            const messageImagee = await cloudinary.v2.uploader.upload(image.tempFilePath, {
+                                folder: 'Mern-chat'
+                            }, async (err, result) => {
                                 if(err){
-                                    return res.status(503).json({message: err.message})
+                                    throw err
+                                } else {
+                                    removeTemp(image.tempFilePath)
+                                    return result
                                 }
                             })
-                            req.body.file = messageImg;
-
-                            if(updateMessage.file){
-                                fs.unlinkSync(path.join(uploadsDir, updateMessage.file), (err) => {
-                                    if(err){
-                                        return res.status(503).json({message: err.message})
-                                    }
-                                })
-                            }
+                            await cloudinary.v2.uploader.destroy(updateMessage.file.public_id, async (err) =>{
+                                if(err){
+                                    throw err
+                                }
+                            })
+                            const messageImag = {public_id : messageImagee.public_id, url: messageImagee.secure_url}
+                            req.body.file = messageImag;
                         }
                     }
                     const isMessage = await Message.findByIdAndUpdate(messageId, req.body, {new: true});

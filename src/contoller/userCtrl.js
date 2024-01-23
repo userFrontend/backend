@@ -1,10 +1,25 @@
 const bcrypt = require('bcrypt')
-
+const cloudinary = require('cloudinary')
 const User = require("../model/userModel")
 const {v4} = require('uuid');
 
 const path = require('path');
 const fs = require('fs');
+
+//cloudinary 
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+})
+
+const removeTemp = (path) => {
+  fs.unlink(path, err => {
+    if(err){
+      throw err
+    }
+  })
+}
 
 const uploadsDir = path.join(__dirname, "../", "public");
 
@@ -33,22 +48,23 @@ const userCtl = {
         const {id} = req.params
         try {
             if(id === req.user._id || req.userIsAdmin){
-                const deleteUser = await User.findByIdAndDelete(id)
+                const deleteUser = await User.findById(id)
                 if(deleteUser){
                     if(deleteUser.coverPicture){
-                        fs.unlinkSync(path.join(uploadsDir, deleteUser.coverPicture), (err) => {
+                        await cloudinary.v2.uploader.destroy(deleteUser.coverPicture.public_id, async (err) =>{
                             if(err){
-                                return res.status(503).json({message: err.message})
+                                throw err
                             }
                         })
                     }
                     if(deleteUser.profilePicture){
-                        fs.unlinkSync(path.join(uploadsDir, deleteUser.profilePicture), (err) => {
+                        await cloudinary.v2.uploader.destroy(deleteUser.profilePicture.public_id, async (err) =>{
                             if(err){
-                                return res.status(503).json({message: err.message})
+                                throw err
                             }
                         })
                     }
+                    await deleteUser.deleteOne({_id: id})
                     return res.status(200).json({message: "User deleted successfully", user: deleteUser})
                 }
             }
@@ -81,47 +97,56 @@ const userCtl = {
                                 return res.status(403).json({message: 'Image size must be less than (1) MB'})
                             }
 
-                            const coverImg = `${v4()}.${bgformat}`
-                            coverImage.mv(path.join(uploadsDir, coverImg), (err) => {
+                            const coverImagee = await cloudinary.v2.uploader.upload(coverImage.tempFilePath, {
+                                folder: 'Mern-chat'
+                            }, async (err, result) => {
                                 if(err){
-                                    return res.status(503).json({message: err.message})
+                                    throw err
+                                } else {
+                                    console.log(coverImage);
+                                    removeTemp(coverImage.tempFilePath)
+                                    return result
                                 }
                             })
-                            req.body.coverPicture = coverImg;
-
                             if(updateUser.coverPicture){
-                                fs.unlinkSync(path.join(uploadsDir, updateUser.coverPicture), (err) => {
+                                await cloudinary.v2.uploader.destroy(updateUser.coverPicture.public_id, async (err) =>{
                                     if(err){
-                                        return res.status(503).json({message: err.message})
+                                        throw err
                                     }
                                 })
                             }
+                            const coverImag = {public_id : coverImagee.public_id, url: coverImagee.secure_url}
+                            req.body.coverPicture = coverImag;
+                            
                         }
                         if(image){
                             const format = image.mimetype.split('/')[1];
                             if(format !== 'png' && format !== 'jpeg') {
                                 return res.status(403).json({message: 'file format incorrect'})
-                            }
-
-                            if(image.size > 1000000) {
+                            } else if(image.size > 1000000) {
                                 return res.status(403).json({message: 'Image size must be less than (1) MB'})
                             }
-
-                            const nameImg = `${v4()}.${format}`
-                            image.mv(path.join(uploadsDir, nameImg), (err) => {
+                            const imagee = await cloudinary.v2.uploader.upload(image.tempFilePath, {
+                                folder: 'Mern-chat'
+                            }, async (err, result) => {
                                 if(err){
-                                    return res.status(503).json({message: err.message})
+                                    throw err
+                                } else {
+                                    removeTemp(image.tempFilePath)
+                                    return result
                                 }
                             })
-                            req.body.profilePicture = nameImg;
-
                             if(updateUser.profilePicture){
-                                fs.unlinkSync(path.join(uploadsDir, updateUser.profilePicture), (err) => {
+                                await cloudinary.v2.uploader.destroy(updateUser.profilePicture.public_id, async (err) =>{
                                     if(err){
-                                        return res.status(503).json({message: err.message})
+                                        throw err
                                     }
                                 })
                             }
+                           
+                            const imag = {public_id : imagee.public_id, url: imagee.secure_url}
+                            req.body.profilePicture = imag;
+
                         }
                     }
                     const user = await User.findByIdAndUpdate(id, req.body, {new: true});

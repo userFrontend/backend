@@ -5,9 +5,26 @@ const http = require('http')
 const dotenv = require('dotenv')
 const socketIo = require('socket.io')
 const mongoose = require('mongoose');
+const cloudinary = ('cloudinary')
+
 
 const path = require('path')
 dotenv.config();
+
+//cloudinary 
+// cloudinary.config({
+//   cloud_name: process.env.CLOUD_NAME,
+//   api_key: process.env.CLOUD_API_KEY,
+//   api_secret: process.env.CLOUD_API_SECRET,
+// })
+
+// const removeTemp = (path) => {
+//   fs.unlink(path, err => {
+//     if(err){
+//       throw err
+//     }
+//   })
+// }
 
 //routes
 const authRouter = require('./src/router/authRouter');
@@ -34,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'src', 'public')))
 //middlewares
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(fileUpload());
+app.use(fileUpload({useTempFiles: true}));
 app.use(cors());
 
 // routes use
