@@ -2,10 +2,8 @@ const Message = require("../model/messageModel")
 const cloudinary = require('cloudinary')
 const {v4} = require('uuid');
 
-const path = require('path');
 const fs = require('fs');
 
-const uploadsDir = path.join(__dirname, "../", "public");
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
