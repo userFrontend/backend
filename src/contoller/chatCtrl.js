@@ -1,4 +1,5 @@
 const Chat = require("../model/chatModel")
+const cloudinary = require('cloudinary')
 const Message = require("../model/messageModel")
 
 const fs = require('fs');
