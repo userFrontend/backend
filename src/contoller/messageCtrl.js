@@ -66,7 +66,7 @@ const messageCtrl = {
     deleteMessage: async (req, res) => {
         const {messageId} = req.params
         try {
-            const deletedMessage = await Message.findById(messageId);
+            const deletedMessage = await Message.findByIdAndDelete(messageId);
             if(deletedMessage){
                 if(deletedMessage.file !== null){
                     await cloudinary.v2.uploader.destroy(deletedMessage.file.public_id, async (err) =>{
@@ -75,7 +75,6 @@ const messageCtrl = {
                         }
                     })
                 }
-                await Message.findOneAndDelete(messageId)
                 return res.status(200).json({message: 'Message deleted!', deletedMessage})
             }
             res.status(404).json({message: 'Message not found!'})
