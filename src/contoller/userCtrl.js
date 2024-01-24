@@ -10,8 +10,8 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 })
 
-const removeTemp = (path) => {
-  fs.unlink(path, err => {
+const removeTemp = (pathes) => {
+  fs.unlink(pathes, err => {
     if(err){
       throw err
     }

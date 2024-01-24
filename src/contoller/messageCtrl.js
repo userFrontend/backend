@@ -1,6 +1,5 @@
 const Message = require("../model/messageModel")
 const cloudinary = require('cloudinary')
-const {v4} = require('uuid');
 
 const fs = require('fs');
 
@@ -9,9 +8,9 @@ cloudinary.config({
     api_key: process.env.CLOUD_API_KEY,
     api_secret: process.env.CLOUD_API_SECRET,
   })
-  
-const removeTemp = (path) => {
-    fs.unlink(path, err => {
+
+const removeTemp = (pathes) => {
+    fs.unlink(pathes, err => {
       if(err){
         throw err
       }
