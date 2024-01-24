@@ -1,10 +1,13 @@
 const Chat = require("../model/chatModel")
 const Message = require("../model/messageModel")
 
-const path = require('path');
 const fs = require('fs');
 
-const uploadsDir = path.join(__dirname, "../", "public");
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
+  })
 
 const chatCtrl = {
     userChats: async (req, res) => {
@@ -35,11 +38,11 @@ const chatCtrl = {
         try {
             const chat = await Chat.findById(chatId);
             if(chat){
-                (await Message.find({chatId: chat._id})).forEach(message => {
-                    if(message.file){
-                        fs.unlinkSync(path.join(uploadsDir, message.file), (err) => {
+                (await Message.find({chatId: chat._id})).forEach(async message => {
+                    if(message.file !== null){
+                        await cloudinary.v2.uploader.destroy(message.file.public_id, async (err) =>{
                             if(err){
-                                return res.status(503).json({message: err.message})
+                                throw err
                             }
                         })
                     }
